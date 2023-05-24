@@ -63,7 +63,7 @@ function addItem(todotxt) {
     })
     .then(res => res.json())
     .then(console.log);
-    alert("New item added!")
+    alert("New item added!");
     var tempIndex = localStorage.getItem("index");
     tempIndex++;
     localStorage.setItem("index", `${tempIndex}`);
