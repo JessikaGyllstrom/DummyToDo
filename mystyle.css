@@ -22,7 +22,7 @@ body {
     margin: 2rem 0rem;
 }
 #wrapper {
-    width: 70%;
+    width: 55%;
 }
 h1 {
     font-size: 2.5rem;
@@ -62,11 +62,14 @@ li {
 .checked {
     background-color: rgb(84, 111, 100);
 }
+.undo {
+    background-color: rgb(54, 53, 62);
+}
 .todo {
     flex-grow: 2;
     text-align: left;
 }
-.addtodo{
+.addtodo {
     display: flex;
     justify-content: center;
     background-color: rgb(54, 53, 62);
@@ -75,4 +78,9 @@ li {
 }
 .addtodo span {
     margin-right: 1rem;
+}
+.number {
+    font-weight: 600;
+    font-size: 1rem;
+    color: rgb(166, 239, 214);
 }

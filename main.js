@@ -1,15 +1,11 @@
-const ul = document.querySelector("list");
-document.getElementById("submitBtn").addEventListener("click", checkInput);
-localStorage.setItem("index", "150");
-
 function checkInput() {
     let todotxt = document.getElementById("todotxt").value;
     if (!todotxt) {
-        console.log("no input");
         alert("Input cant be empty!")
     }
     else {
         addItem(todotxt);
+        todotxt = '';
     }
 }
 async function getTodos() {
@@ -24,56 +20,59 @@ async function getTodos() {
 getTodos().then((list) => {
     for (let i = 0; i < 10; i++) {
         let li = document.createElement('li');
-        li.innerHTML = `<div id="${list.todos[i].id}" class="row"><div>${list.todos[i].id}</div><div id="item" class="todo">${list.todos[i].todo}</div><input type="checkbox" id="check" name="check"><button name="deleteBtn">Delete</button></div>`;
-        if (list.todos[i].completed) {
-            li.classList.toggle('checked');
-        }
+        li.innerHTML = `<div id="${list.todos[i].id}" class="row"><div class="number">${list.todos[i].id}</div><div id="${list.todos[i].todo}" class="todo">${list.todos[i].todo}</div><input type="checkbox" id="check" name="check"><button name="deleteBtn">Delete</button></div>`;
         document.getElementById('list').appendChild(li);
-    }
-}).catch(error => {
+        }
+    }).catch(error => {
     error.message; 
 });
-
-document.querySelector('ul').addEventListener('click', handleClick);
+document.getElementById('list').addEventListener('click', handleClick);
 document.getElementById('newItems').addEventListener('click', handleClick);
+document.getElementById('completed').addEventListener('click', handleClick);
+document.getElementById("submitBtn").addEventListener("click", checkInput);
+localStorage.setItem("index", "11");
 
 function handleClick(e) {
     let item = e.target.parentNode;
     let id = e.target.parentNode.id;
-    console.log(e.target.parentNode.id);
     if (e.target.name == 'deleteBtn') {
         deleteItem(id, item);
     }
     if (e.target.name == 'check') {
-        item.classList.toggle('checked');
-        completeItem(id);
+        let todo = e.target.previousSibling.id;
+        completeItem(id, todo);
+        item.remove();
+    }
+    if (e.target.name == 'unCheck') {
+        e.target.parentNode.classList.toggle('undo');
     }
 }
 function addItem(todotxt) {
-    console.log("adding item");
-    console.log(todotxt);
     fetch('https://dummyjson.com/todos/add', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        todo: `${todotxt}`,
-        completed: false,
-        userId: 5,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            todo: `${todotxt}`,
+            completed: false,
+            userId: 5,
         })
     })
     .then(res => res.json())
-    .then(console.log);
-    alert("New item added!");
-    var tempIndex = localStorage.getItem("index");
-    tempIndex++;
-    localStorage.setItem("index", `${tempIndex}`);
-    localStorage.setItem("todo", `${todotxt}`);
-    localStorage.setItem("completed", "false");
-    localStorage.setItem("userId", "5");
-    document.getElementById("todotxt").value = "";
-    displayNewItem();
+    .then(data => {
+        const todo = {
+            todo: `${todotxt}`,
+            completed: data.completed,
+            id: localStorage.getItem('index')
+        };
+    alert("Item added!")
+    displayNewItem(todo)
+    })
+    var index = localStorage.getItem('index');
+    index++;
+    localStorage.setItem('index', index)
 }
-function completeItem(id) {
+// complete todo
+function completeItem(id, todo) {
     fetch(`https://dummyjson.com/todos/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -81,24 +80,42 @@ function completeItem(id) {
             completed: true,
         })
     })
-    .then(res => res.json())
-    .then(console.log);
-    alert("Item completed!");
+    .then(response => response.json())
+    .then(data => {
+        const todoObj = { 
+            todo: `${todo}`,
+            id: `${id}`
+        };
+        console.log(todoObj);
+        alert("Item completed!");
+        displayCompleted(todoObj);
+    }).catch(error => {
+        console.log(error);
+    })
 }
+// delete todo        
 function deleteItem(id, item) {
     fetch(`https://dummyjson.com/todos/${id}`, {
     method: 'DELETE',
     })
     .then(res => res.json())
-    .then(console.log);
-    item.remove();
-    alert("Item deleted!");
+    .then(data => {
+        item.remove();
+        alert("Item deleted!");
+    }).catch(error => {
+        console.log(error);
+    })
 }
-function displayNewItem() {
-    const id = localStorage.getItem("index");
-    const todo = localStorage.getItem("todo");
-    const index = "140";
+// display added todo 
+function displayNewItem(todo) {
     let li = document.createElement('li');
-    li.innerHTML = `<div id="${index}" class="row"><div>${id}</div><div id="item" class="todo">${todo}</div><input type="checkbox" id="check" name="check"><button name="deleteBtn">Delete</button></div>`;
+    li.innerHTML = `<div id="${todo.id}" class="row"><div class="number">${todo.id}</div><div id="${todo.todo}" class="todo">${todo.todo}</div><input type="checkbox" id="check" name="check"><button name="deleteBtn">Delete</button></div>`;
     document.getElementById('newItems').appendChild(li);
+}
+// display completed todo 
+function displayCompleted(todoObj) {
+    let li = document.createElement('li');
+    li.innerHTML = `<div id="${todoObj.id}" class="row"><div class="number">${todoObj.id}</div><div id="${todoObj.todo}" class="todo">${todoObj.todo}</div><input type="checkbox" id="check" name="unCheck" checked><button name="deleteBtn">Delete</button></div>`;
+    document.getElementById('completed').appendChild(li);
+    li.classList.toggle("checked");
 }
